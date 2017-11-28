@@ -53,3 +53,6 @@ mailchimp_signup.mailchimp_signup.*:
         destination:
           type: string
           label: 'Destination'
+        ajax:
+           type: boolean
+           label: 'Ajax form submit'

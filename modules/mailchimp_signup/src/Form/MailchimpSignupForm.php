@@ -132,6 +132,13 @@ class MailchimpSignupForm extends EntityForm {
       '#default_value' => isset($signup->settings['destination']) ? $signup->settings['destination'] : NULL,
     );
 
+    $form['settings']['ajax_submit'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('AJAX Form Submit Mode'),
+      '#description' => t('Select if signup form submit should use AJAX instead of default page reload. Destination page will be ignored if checked.'),
+      '#default_value' => isset($signup->settings['ajax_submit']) ? $signup->settings['ajax_submit'] : FALSE,
+    );
+
     $form['mc_lists_config'] = array(
       '#type' => 'details',
       '#title' => t('MailChimp List Selection & Configuration'),

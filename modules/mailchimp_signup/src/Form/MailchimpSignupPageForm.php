@@ -5,6 +5,10 @@ namespace Drupal\mailchimp_signup\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\HtmlCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\mailchimp_signup\Entity\MailchimpSignup;
 
 /**
@@ -135,6 +139,17 @@ class MailchimpSignupPageForm extends FormBase {
       '#disabled' => (empty($lists)),
     ];
 
+    // Add ajax submit to form if configured.
+    if ($this->signup->settings['ajax_submit']) {
+      $ajax_wrapper_id = Html::getId($this->formId) . '-wrapper';
+      // Get wrapper form id via cores way, see FormBuilder doBuildForm().
+      $form['#prefix'] = '<div id="' . $ajax_wrapper_id . '">';
+      $form['#postfix'] = '</div>';
+      $form['actions']['submit']['#ajax'] = [
+        'callback' => '::ajaxSubmit',
+        'wrapper' => $ajax_wrapper_id,
+      ];
+    }
     return $form;
   }
 
@@ -245,6 +260,38 @@ class MailchimpSignupPageForm extends FormBase {
     }
 
     $form_state->setRedirectUrl($destination_url);
+  }
+
+  /**
+   * Ajax submit handler.
+   *
+   * @param array $form
+   *   The form itself.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   A ajax response.
+   */
+  public function ajaxSubmit(array $form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+    $htmlId = '#' . $form['actions']['submit']['#ajax']['wrapper'];
+    // On error add the form with error messages to response.
+    if ($form_state->hasAnyErrors()) {
+      $form['status_messages'] = [
+        '#type' => 'status_messages',
+        '#weight' => 0,
+      ];
+      $response->addCommand(new ReplaceCommand($htmlId, $form));
+    }
+    else {
+      // Without errors add status messages to response.
+      $statusMessages = ['#type' => 'status_messages'];
+      $renderedMessages = \Drupal::service('renderer')->renderRoot($statusMessages);
+      $response->addCommand(new HtmlCommand($htmlId, $renderedMessages));
+    }
+
+    return $response;
   }
 
 }
