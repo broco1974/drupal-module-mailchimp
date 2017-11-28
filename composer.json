@@ -3,6 +3,7 @@
   "description": "Mailchimp is an integration with the Mailchimp Mass email tool.",
   "homepage": "http://drupal.org/project/mailchimp",
   "license": "GPL-2.0+",
+  "type": "drupal-module",
   "repositories": [
     {
       "type": "vcs",
